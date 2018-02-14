@@ -74,6 +74,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="RepoModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\GitCommands\GitCommands.csproj">
@@ -111,4 +112,7 @@
     <Content Include="git-extensions-logo-final_red.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetDir)$(TargetName).dll" "C:\Data\Dev\GitGub\gitextensions\gitextensions\GitExtensions\bin\Debug\Plugins\" /F /Y</PostBuildEvent>
+  </PropertyGroup>
 </Project>

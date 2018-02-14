@@ -17,12 +17,12 @@ namespace Notifications
         private NotifyIcon _NotifyIcon = null;
         private IGitUICommands _GitUiCommands = null;
 
-        private List<string> _reposUpdated = new List<string>();
+        private Dictionary<string, RepoModel> _repos = new Dictionary<string, RepoModel>();
 
         public Notifier(IGitUICommands gitUICommands)
         {
             _GitUiCommands = gitUICommands;
-
+            
             _NotifyIcon = new NotifyIcon();
             _NotifyIcon.BalloonTipClicked += _notifyIcon_BalloonTipClicked;
             _NotifyIcon.Visible = true;
@@ -33,9 +33,12 @@ namespace Notifications
 
         private void OnMenu(object sender, EventArgs e)
         {
-            if (sender is MenuItem mi && mi.Tag != null && mi.Tag.ToString() == "Clear")
+            if (sender is ToolStripItem mi && mi.Tag != null && mi.Tag.ToString() == "Clear")
             {
-                _reposUpdated.Clear();
+                foreach(var repo in _repos.Values)
+                {
+                    repo.State = RepoModel.RepoStateEnum.OnDate;
+                }
 
                 UpdateMenu();
                 UpdateIcon();
@@ -45,24 +48,41 @@ namespace Notifications
         private void _notifyIcon_BalloonTipClicked(object sender, EventArgs e)
         {
         }
-        
+
+        public void AddRepo(string repo)
+        {
+            if (!_repos.ContainsKey(repo))
+            {
+                RepoModel rm = new RepoModel() { Repo = repo };
+                rm.State = RepoModel.RepoStateEnum.OnDate;
+                _repos.Add(repo, rm);
+
+                UpdateIcon();
+                UpdateMenu();
+            }
+        }
+
         public void RepoUpdated(string repoPath)
         {
-            if (!_reposUpdated.Contains(repoPath))
+            if (_repos.ContainsKey(repoPath))
             {
-                _reposUpdated.Add(repoPath);
-
-                // Shows a notification with specified message and title
-                _NotifyIcon.ShowBalloonTip(3000, "Repository updated", $"Repo {repoPath} has changed !", ToolTipIcon.Info);
+                _repos[repoPath].State = RepoModel.RepoStateEnum.Pending;
+                
+                UpdateIcon();
+                UpdateMenu();
             }
+        }
 
-            UpdateIcon();
-            UpdateMenu();
+        public void ShowNotif(string repo)
+        {
+            // Shows a notification with specified message and title
+            _NotifyIcon.ShowBalloonTip(3000, "Repository updated", $"Repo {repo} has changed !", ToolTipIcon.Info);
+
         }
 
         private void UpdateIcon()
         {
-            if (_reposUpdated.Count > 0)
+            if (_repos.Values.Where(r => r.State == RepoModel.RepoStateEnum.Pending).Count() > 0)
             {
                 _NotifyIcon.Icon = Notifications.Properties.Resources.git_extensions_logo_final_red;
             }
@@ -74,32 +94,28 @@ namespace Notifications
 
         private void UpdateMenu()
         {
-            if (_reposUpdated.Count > 0)
+            ContextMenuStrip menus = new ContextMenuStrip();
+            
+            foreach (var repo in _repos.Values)
             {
-                List<MenuItem> menus = new List<MenuItem>();
-                foreach (var repo in _reposUpdated)
+                var menu = menus.Items.Add(repo.Repo);
+                menu.Tag = repo;
+                if (repo.State == RepoModel.RepoStateEnum.OnDate)
                 {
-                    var menu = new MenuItem($"Repo {repo} has changed !", OnMenu)
-                    {
-                        Tag = repo
-                    };
-                    menus.Add(menu);
+                    menu.Image = Notifications.Properties.Resources.git_extensions_logo_final_green.ToBitmap();
                 }
-
-                var menuClear = new MenuItem($"Clear", OnMenu)
+                else
                 {
-                    Tag = "Clear"
-                };
-                menus.Add(menuClear);
-
-
-                _NotifyIcon.ContextMenu = new ContextMenu(menus.ToArray());
+                    menu.Image = Notifications.Properties.Resources.git_extensions_logo_final_red.ToBitmap();
+                }
+                menu.Click += OnMenu;
             }
-            else
-            {
-                MenuItem[] menus = { new MenuItem("No change") };
-                _NotifyIcon.ContextMenu = new ContextMenu(menus);
-            }
+                
+            var clearItem = menus.Items.Add("Clear");
+            clearItem.Tag = "Clear";
+            clearItem.Click += OnMenu;
+
+            _NotifyIcon.ContextMenuStrip = menus;
         }
 
         public void Dispose()

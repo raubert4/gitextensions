@@ -20,6 +20,7 @@ namespace Notifications
         private IDisposable cancellationToken;
         private IGitUICommands currentGitUiCommands;
         private Notifier _Notifier;
+        private List<string> _Repos = new List<string>();
 
         private NumberSetting<int> CheckUpdateInterval = new NumberSetting<int>("Check update every (seconds) - set to 0 to disable", 0);
         private BoolSetting ShowNotification = new BoolSetting("Show window desktop notification", false);
@@ -42,7 +43,21 @@ namespace Notifications
 
             _Notifier = new Notifier(currentGitUiCommands);
 
+            InitRepos();
+
             RecreateObservable();
+        }
+
+        private void InitRepos()
+        {
+            _Repos.Clear();
+
+            string repos = Repositories.ValueOrDefault(Settings);
+            foreach (string repo in repos.Split(';'))
+            {
+                _Repos.Add(repo);
+                _Notifier.AddRepo(repo);
+            }
         }
 
         private void OnPostSettings(object sender, GitUIPostActionEventArgs e)
@@ -81,8 +96,7 @@ namespace Notifications
                                   var gitCmd = "fetch --all";
 
                                   // Loop on each repository
-                                  string repos = Repositories.ValueOrDefault(Settings);
-                                  foreach (string repo in repos.Split(';'))
+                                  foreach (string repo in _Repos)
                                   {
                                       // Create git module to fetch this repo
                                       GitModule module = new GitModule(repo);
@@ -91,9 +105,11 @@ namespace Notifications
                                       // Conditions informing repo has changed
                                       if (res.Contains("From"))
                                       {
+                                          _Notifier.RepoUpdated(repo);
+
                                           if (ShowNotification.ValueOrDefault(Settings))
                                           {
-                                              _Notifier.RepoUpdated(repo);
+                                              _Notifier.ShowNotif(repo);
                                           }
 
                                           // Update UI if it's current repo
@@ -104,7 +120,7 @@ namespace Notifications
                                       }
                                   }
                               }
-                                  );
+                        );
             }
         }
 
