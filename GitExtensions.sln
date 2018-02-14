@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{3D5CA0E0-EF51-4488-A8B7-86CC330D7AD8}"
 EndProject
@@ -149,6 +149,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JiraCommitHintPlugin", "Plugins\JiraCommitHintPlugin\JiraCommitHintPlugin.csproj", "{626CA9EB-DB83-4BEB-87D5-15E3B397EF57}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonTestUtils", "UnitTests\CommonTestUtils\CommonTestUtils.csproj", "{7B1F2FA0-E17D-499B-AF86-D49DBEF8C548}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notifications", "Plugins\Notifications\Notifications.csproj", "{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -682,6 +684,18 @@ Global
 		{7B1F2FA0-E17D-499B-AF86-D49DBEF8C548}.ReleaseTC|Any CPU.Build.0 = Release|Any CPU
 		{7B1F2FA0-E17D-499B-AF86-D49DBEF8C548}.ReleaseTC|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7B1F2FA0-E17D-499B-AF86-D49DBEF8C548}.ReleaseTC|Mixed Platforms.Build.0 = Release|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.ReleaseTC|Any CPU.ActiveCfg = Release|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.ReleaseTC|Any CPU.Build.0 = Release|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.ReleaseTC|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB}.ReleaseTC|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -725,6 +739,7 @@ Global
 		{93CE3A27-5A63-4436-8C64-CBCA75322C5B} = {020F800B-9170-4BB3-83C9-FCF83596D83C}
 		{626CA9EB-DB83-4BEB-87D5-15E3B397EF57} = {3D5CA0E0-EF51-4488-A8B7-86CC330D7AD8}
 		{7B1F2FA0-E17D-499B-AF86-D49DBEF8C548} = {020F800B-9170-4BB3-83C9-FCF83596D83C}
+		{451F63D5-62EE-4B12-AA81-6A1FD3ECD2CB} = {3D5CA0E0-EF51-4488-A8B7-86CC330D7AD8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ECECB7EA-BCCF-44AD-B63E-C2FA45589FB0}
