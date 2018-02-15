@@ -66,6 +66,8 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Enums.cs" />
+    <Compile Include="GitRepositoryManager.cs" />
     <Compile Include="NotificationsPlugin.cs" />
     <Compile Include="Notifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -74,7 +76,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="RepoModel.cs" />
+    <Compile Include="GitRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\GitCommands\GitCommands.csproj">
@@ -109,10 +111,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="git-extensions-logo-final_green.ico" />
+    <Content Include="git-extensions-logo-final_green_upd.ico" />
+    <Content Include="git-extensions-logo-final_lightblue.ico" />
     <Content Include="git-extensions-logo-final_red.ico" />
+    <Content Include="git-extensions-logo-final_yellow.ico" />
+    <Content Include="git-extensions-logo-final_yellow_upd.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)$(TargetName).dll" "C:\Data\Dev\GitGub\gitextensions\gitextensions\GitExtensions\bin\Debug\Plugins\" /F /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetDir)$(TargetName).dll" "E:\tmp\CSharp\Git\gitextensions\GitExtensions\bin\Debug\Plugins\" /F /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>

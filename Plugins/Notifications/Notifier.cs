@@ -3,6 +3,7 @@ using GitUI;
 using GitUIPluginInterfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
@@ -15,62 +16,55 @@ namespace Notifications
     public class Notifier : IDisposable
     {
         private NotifyIcon _NotifyIcon = null;
-        private IGitUICommands _GitUiCommands = null;
+        private IGitUICommands _CurrentGitUiCommands;
 
-        private Dictionary<string, RepoModel> _repos = new Dictionary<string, RepoModel>();
+        private List<GitRepository> _Repos = new List<GitRepository>();
 
-        public Notifier(IGitUICommands gitUICommands)
+
+        public Notifier(IGitUICommands currentGitUiCommands)
         {
-            _GitUiCommands = gitUICommands;
-            
+            _CurrentGitUiCommands = currentGitUiCommands;
+
             _NotifyIcon = new NotifyIcon();
             _NotifyIcon.BalloonTipClicked += _notifyIcon_BalloonTipClicked;
             _NotifyIcon.Visible = true;
-
-            UpdateIcon();
-            UpdateMenu();
         }
 
         private void OnMenu(object sender, EventArgs e)
         {
-            if (sender is ToolStripItem mi && mi.Tag != null && mi.Tag.ToString() == "Clear")
+            if (sender is ToolStripItem mir && mir.Tag is GitRepository rm)
             {
-                foreach(var repo in _repos.Values)
+                if (_CurrentGitUiCommands.GitModule.WorkingDir != rm.RepoPath)
                 {
-                    repo.State = RepoModel.RepoStateEnum.OnDate;
+                    Process.Start(@"E:\tmp\CSharp\Git\gitextensions\GitExtensions\bin\Debug\GitExtensions.exe", $"browse {rm.RepoPath}");
                 }
-
-                UpdateMenu();
-                UpdateIcon();
             }
         }
 
         private void _notifyIcon_BalloonTipClicked(object sender, EventArgs e)
         {
         }
-
-        public void AddRepo(string repo)
+        
+        public void Init(List<GitRepository> repos)
         {
-            if (!_repos.ContainsKey(repo))
-            {
-                RepoModel rm = new RepoModel() { Repo = repo };
-                rm.State = RepoModel.RepoStateEnum.OnDate;
-                _repos.Add(repo, rm);
+            _Repos = repos;
 
-                UpdateIcon();
-                UpdateMenu();
-            }
+            UpdateIcon();
+            UpdateMenu();
         }
 
-        public void RepoUpdated(string repoPath)
+        public void UpdateRepo(GitRepository repo)
         {
-            if (_repos.ContainsKey(repoPath))
+            foreach (ToolStripItem menu in _NotifyIcon.ContextMenuStrip.Items)
             {
-                _repos[repoPath].State = RepoModel.RepoStateEnum.Pending;
-                
-                UpdateIcon();
-                UpdateMenu();
+                if (menu.Tag is GitRepository gr && gr.RepoPath == repo.RepoPath)
+                {
+                    menu.Image = CastStatusToIcon(repo.State).ToBitmap();
+                    menu.Text = $"{repo.RepoPath} - {CastStatusToLabel(repo.State)}";
+                }
             }
+
+            UpdateIcon();
         }
 
         public void ShowNotif(string repo)
@@ -82,40 +76,88 @@ namespace Notifications
 
         private void UpdateIcon()
         {
-            if (_repos.Values.Where(r => r.State == RepoModel.RepoStateEnum.Pending).Count() > 0)
+            RepositoryStatus status = RepositoryStatus.UpToDate;
+
+            if (_Repos.Where(r => r.State == RepositoryStatus.Error).Count() > 0)
             {
-                _NotifyIcon.Icon = Notifications.Properties.Resources.git_extensions_logo_final_red;
+                status = RepositoryStatus.Error;
             }
-            else
+            else if (_Repos.Where(r => r.State == RepositoryStatus.NeedUpdate_Modified).Count() > 0)
             {
-                _NotifyIcon.Icon = Notifications.Properties.Resources.git_extensions_logo_final_green;
+                status = RepositoryStatus.NeedUpdate_Modified;
             }
+            else if (_Repos.Where(r => r.State == RepositoryStatus.NeedUpdate).Count() > 0)
+            {
+                status = RepositoryStatus.NeedUpdate;
+            }
+            else if (_Repos.Where(r => r.State == RepositoryStatus.UpToDate_Modified).Count() > 0)
+            {
+                status = RepositoryStatus.UpToDate_Modified;
+            }
+            if (_Repos.Where(r => r.State == RepositoryStatus.Unknown).Count() > 0)
+            {
+                status = RepositoryStatus.Unknown;
+            }
+
+            _NotifyIcon.Icon = CastStatusToIcon(status);
         }
 
         private void UpdateMenu()
         {
             ContextMenuStrip menus = new ContextMenuStrip();
             
-            foreach (var repo in _repos.Values)
+            foreach (var repo in _Repos)
             {
-                var menu = menus.Items.Add(repo.Repo);
+                var menu = menus.Items.Add($"{repo.RepoPath} - {CastStatusToLabel(repo.State)}");
                 menu.Tag = repo;
-                if (repo.State == RepoModel.RepoStateEnum.OnDate)
-                {
-                    menu.Image = Notifications.Properties.Resources.git_extensions_logo_final_green.ToBitmap();
-                }
-                else
-                {
-                    menu.Image = Notifications.Properties.Resources.git_extensions_logo_final_red.ToBitmap();
-                }
+                menu.Image = CastStatusToIcon(repo.State).ToBitmap();
+
                 menu.Click += OnMenu;
             }
                 
-            var clearItem = menus.Items.Add("Clear");
-            clearItem.Tag = "Clear";
-            clearItem.Click += OnMenu;
+            //var clearItem = menus.Items.Add("Clear");
+            //clearItem.Tag = "Clear";
+            //clearItem.Click += OnMenu;
 
             _NotifyIcon.ContextMenuStrip = menus;
+        }
+
+        private Icon CastStatusToIcon(RepositoryStatus status)
+        {
+            switch (status)
+            {
+                case RepositoryStatus.Error:
+                    return Notifications.Properties.Resources.git_extensions_logo_final_red;
+                case RepositoryStatus.Unknown:
+                    return Notifications.Properties.Resources.git_extensions_logo_final_lightblue;
+                case RepositoryStatus.NeedUpdate:
+                    return Notifications.Properties.Resources.git_extensions_logo_final_yellow;
+                case RepositoryStatus.NeedUpdate_Modified:
+                    return Notifications.Properties.Resources.git_extensions_logo_final_yellow_upd;
+                case RepositoryStatus.UpToDate:
+                    return Notifications.Properties.Resources.git_extensions_logo_final_green;
+                case RepositoryStatus.UpToDate_Modified:
+                    return Notifications.Properties.Resources.git_extensions_logo_final_green_upd;
+                default:
+                    return Notifications.Properties.Resources.git_extensions_logo_final_red;
+            }
+        }
+
+        private string CastStatusToLabel(RepositoryStatus status)
+        {
+            switch (status)
+            {
+                case RepositoryStatus.NeedUpdate:
+                    return "Need udpate";
+                case RepositoryStatus.NeedUpdate_Modified:
+                    return "Need udpate, modified locally";
+                case RepositoryStatus.UpToDate:
+                    return "Up to date";
+                case RepositoryStatus.UpToDate_Modified:
+                    return "Up to date, modified locally";
+                default:
+                    return status.ToString();
+            }
         }
 
         public void Dispose()
@@ -127,8 +169,6 @@ namespace Notifications
                 _NotifyIcon.Dispose();
                 _NotifyIcon = null;
             }
-
-            _GitUiCommands = null;
         }
     }
 }

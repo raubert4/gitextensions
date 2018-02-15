@@ -73,9 +73,49 @@ namespace Notifications.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
+        internal static System.Drawing.Icon git_extensions_logo_final_green_upd {
+            get {
+                object obj = ResourceManager.GetObject("git_extensions_logo_final_green_upd", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon git_extensions_logo_final_lightblue {
+            get {
+                object obj = ResourceManager.GetObject("git_extensions_logo_final_lightblue", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
         internal static System.Drawing.Icon git_extensions_logo_final_red {
             get {
                 object obj = ResourceManager.GetObject("git_extensions_logo_final_red", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon git_extensions_logo_final_yellow {
+            get {
+                object obj = ResourceManager.GetObject("git_extensions_logo_final_yellow", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon git_extensions_logo_final_yellow_upd {
+            get {
+                object obj = ResourceManager.GetObject("git_extensions_logo_final_yellow_upd", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

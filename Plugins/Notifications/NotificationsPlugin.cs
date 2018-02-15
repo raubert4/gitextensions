@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using GitCommands;
 using GitUIPluginInterfaces;
 using ResourceManager;
+using System.Linq;
 
 namespace Notifications
 {
@@ -13,14 +14,18 @@ namespace Notifications
     {
         public NotificationsPlugin()
         {
+            Repos = new Dictionary<string, GitRepository>();
+
             SetNameAndDescription("Windows notifications");
             Translate();
         }
 
+        public Dictionary<string, GitRepository> Repos { get; private set; }
+
         private IDisposable cancellationToken;
         private IGitUICommands currentGitUiCommands;
         private Notifier _Notifier;
-        private List<string> _Repos = new List<string>();
+
 
         private NumberSetting<int> CheckUpdateInterval = new NumberSetting<int>("Check update every (seconds) - set to 0 to disable", 0);
         private BoolSetting ShowNotification = new BoolSetting("Show window desktop notification", false);
@@ -38,25 +43,48 @@ namespace Notifications
         {
             base.Register(gitUiCommands);
 
-            currentGitUiCommands = gitUiCommands;
-            currentGitUiCommands.PostSettings += OnPostSettings;
+            GitRepositoryManager.SetGitPath(@"C:\Program Files\Git\bin\git.exe");
 
-            _Notifier = new Notifier(currentGitUiCommands);
+            _Notifier = new Notifier(gitUiCommands);
 
             InitRepos();
+
+            currentGitUiCommands = gitUiCommands;
+            currentGitUiCommands.PostSettings += OnPostSettings;
 
             RecreateObservable();
         }
 
         private void InitRepos()
         {
-            _Repos.Clear();
+            foreach (var gr in Repos.Values)
+            {
+                gr.OnStateChange -= GitRepository_OnStateChange;
+            }
+
+            Repos.Clear();
 
             string repos = Repositories.ValueOrDefault(Settings);
             foreach (string repo in repos.Split(';'))
             {
-                _Repos.Add(repo);
-                _Notifier.AddRepo(repo);
+                var gr = new GitRepository(repo);
+
+                gr.OnStateChange += GitRepository_OnStateChange;
+
+                Repos.Add(repo, gr);
+            }
+
+            _Notifier.Init(Repos.Values.ToList());
+        }
+
+        private void GitRepository_OnStateChange(GitRepository sender, RepositoryStatus state)
+        {
+            _Notifier.UpdateRepo(sender);
+            
+            // Update UI if it's current repo
+            if (currentGitUiCommands.GitModule.WorkingDir == sender.RepoPath)
+            {
+                currentGitUiCommands.RepoChangedNotifier.Notify();
             }
         }
 
@@ -93,31 +121,10 @@ namespace Notifications
                               .ObserveOn(ThreadPoolScheduler.Instance)
                               .Subscribe(i =>
                               {
-                                  var gitCmd = "fetch --all";
-
                                   // Loop on each repository
-                                  foreach (string repo in _Repos)
+                                  foreach (var repo in Repos.Values)
                                   {
-                                      // Create git module to fetch this repo
-                                      GitModule module = new GitModule(repo);
-                                      string res = module.RunGitCmd(gitCmd);
-
-                                      // Conditions informing repo has changed
-                                      if (res.Contains("From"))
-                                      {
-                                          _Notifier.RepoUpdated(repo);
-
-                                          if (ShowNotification.ValueOrDefault(Settings))
-                                          {
-                                              _Notifier.ShowNotif(repo);
-                                          }
-
-                                          // Update UI if it's current repo
-                                          if (gitModule.WorkingDir == module.WorkingDir)
-                                          {
-                                              currentGitUiCommands.RepoChangedNotifier.Notify();
-                                          }
-                                      }
+                                      repo.CheckStatus();
                                   }
                               }
                         );
