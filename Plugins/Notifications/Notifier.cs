@@ -1,5 +1,6 @@
 ﻿using GitCommands;
 using GitUI;
+using GitUI.CommandsDialogs;
 using GitUIPluginInterfaces;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,15 @@ namespace Notifications
             {
                 if (_CurrentGitUiCommands.GitModule.WorkingDir != rm.RepoPath)
                 {
-                    Process.Start(@"E:\tmp\CSharp\Git\gitextensions\GitExtensions\bin\Debug\GitExtensions.exe", $"browse {rm.RepoPath}");
+                    FormBrowse brw = _CurrentGitUiCommands.BrowseRepo as FormBrowse;
+                    if (brw != null)
+                    {
+                        brw.SetWorkingDir(rm.RepoPath);
+                    }
+                    else
+                    {
+                        Process.Start(@"E:\tmp\CSharp\Git\gitextensions\GitExtensions\bin\Debug\GitExtensions.exe", $"browse {rm.RepoPath}");
+                    }
                 }
             }
         }
@@ -50,7 +59,7 @@ namespace Notifications
             _Repos = repos;
 
             UpdateIcon();
-            UpdateMenu();
+            InitMenu();
         }
 
         public void UpdateRepo(GitRepository repo)
@@ -60,7 +69,7 @@ namespace Notifications
                 if (menu.Tag is GitRepository gr && gr.RepoPath == repo.RepoPath)
                 {
                     menu.Image = CastStatusToIcon(repo.State).ToBitmap();
-                    menu.Text = $"{repo.RepoPath} - {CastStatusToLabel(repo.State)}";
+                    menu.Text = $"{repo.RepoPath} - {CastStatusToLabel(repo.State)}";                    
                 }
             }
 
@@ -102,7 +111,7 @@ namespace Notifications
             _NotifyIcon.Icon = CastStatusToIcon(status);
         }
 
-        private void UpdateMenu()
+        private void InitMenu()
         {
             ContextMenuStrip menus = new ContextMenuStrip();
             

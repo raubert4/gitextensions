@@ -121,10 +121,17 @@ namespace Notifications
                               .ObserveOn(ThreadPoolScheduler.Instance)
                               .Subscribe(i =>
                               {
-                                  // Loop on each repository
-                                  foreach (var repo in Repos.Values)
+                                  try
                                   {
-                                      repo.CheckStatus();
+                                      // Loop on each repository to check status
+                                      foreach (var repo in Repos.Values)
+                                      {
+                                          repo.CheckStatus();
+                                      }
+                                  }
+                                  catch (Exception e)
+                                  {
+                                      string msg = e.ToString();
                                   }
                               }
                         );
